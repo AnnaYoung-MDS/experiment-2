@@ -153,30 +153,3 @@ body {
   margin-bottom: 8px;
   display: block;
 }
-
-/* Scanner box default state */
-#scanner {
-  border: 3px dashed rgba(255,255,255,0.3);
-  border-radius: 12px;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-/* Actively scanning */
-#scanner.scanning {
-  border-color: #0af;
-  box-shadow: 0 0 12px rgba(0,170,255,0.6);
-}
-
-/* Successful detection feedback */
-#scanner.detected {
-  border-color: #4caf50;
-  box-shadow: 0 0 18px rgba(76, 175, 80, 0.7);
-  animation: pulse-success 1s ease;
-}
-
-@keyframes pulse-success {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-  100% { transform: scale(1); }
-}
-

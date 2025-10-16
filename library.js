@@ -6,6 +6,49 @@ function getBooks() {
 }
 function saveBooks(books) { localStorage.setItem(LS_KEY, JSON.stringify(books)); }
 
+/* ---------- Points & badges helpers ---------- */
+function getTotalPoints() {
+  const books = getBooks();
+  return books.reduce((sum, b) => sum + (b.readPages || 0), 0);
+}
+
+// Define your badges here (easy to extend)
+const BADGES = [
+  { id: 'p50',  name: '50 Pages',  threshold: 50,  emoji: '🥉' },
+  { id: 'p100', name: '100 Pages', threshold: 100, emoji: '🥈' },
+  // { id: 'p250', name: '250 Pages', threshold: 250, emoji: '🥇' },
+];
+
+function renderBadges() {
+  const total = getTotalPoints();
+  const totalEl = document.getElementById('points-total');
+  if (totalEl) totalEl.textContent = String(total);
+
+  const grid = document.getElementById('badges-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  BADGES.forEach(b => {
+    const earned = total >= b.threshold;
+    const li = document.createElement('li');
+    li.className = 'card';
+    li.style.opacity = earned ? '1' : '.6';
+    li.innerHTML = `
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="font-size:28px;">${b.emoji}</div>
+        <div>
+          <div class="title">${b.name}</div>
+          <div class="meta">${earned ? 'Unlocked' : `Read ${b.threshold} pages`}</div>
+        </div>
+      </div>
+      <div class="meta" style="margin-top:6px;">
+        Progress: ${Math.min(total, b.threshold)} / ${b.threshold}
+      </div>
+    `;
+    grid.appendChild(li);
+  });
+}
+
 /* ---------- Render library ---------- */
 function renderBooks() {
   const grid = document.getElementById('book-grid');
@@ -15,11 +58,12 @@ function renderBooks() {
   if (!books.length) { empty.hidden = false; return; }
   empty.hidden = true;
 
-  books.forEach(b => {
+  books.forEach((b, idx) => {
     const parts = [];
     if (b.author) parts.push(b.author);
     if (b.pages) parts.push(`${b.pages} pages`);
     if (b.isbn) parts.push(`ISBN: ${b.isbn}`);
+    if (b.readPages) parts.push(`Read: ${b.readPages} pages`);
     const meta = parts.join(' · ');
 
     const li = document.createElement('li');
@@ -28,6 +72,7 @@ function renderBooks() {
       ${b.thumbnail ? `<img src="${b.thumbnail}" alt="${b.title}" class="cover">` : ''}
       <div class="title">${b.title || 'Untitled'}</div>
       <div class="meta">${meta}</div>
+      <button class="btn log-btn" data-idx="${idx}" type="button" style="margin-top:8px;">Log reading</button>
     `;
     grid.appendChild(li);
   });
@@ -37,7 +82,19 @@ function renderBooks() {
 function showAddPanel() {
   document.getElementById('add-panel').hidden = false;
   document.getElementById('shelf-view').hidden = false;
+  document.getElementById('badges-panel').hidden = true;
   switchMethod('camera');
+}
+function showShelf() {
+  document.getElementById('shelf-view').hidden = false;
+  document.getElementById('add-panel').hidden = true;
+  document.getElementById('badges-panel').hidden = true;
+}
+function showBadgesPanel() {
+  document.getElementById('shelf-view').hidden = true;
+  document.getElementById('add-panel').hidden = true;
+  document.getElementById('badges-panel').hidden = false;
+  renderBadges();
 }
 
 function switchMethod(method) {
@@ -91,7 +148,6 @@ async function lookupGoogleBooks(isbn) {
     };
   } catch { return null; }
 }
-
 async function lookupOpenLibrary(isbn) {
   try {
     const res = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${encodeURIComponent(isbn)}&format=json&jscmd=data`);
@@ -109,7 +165,6 @@ async function lookupOpenLibrary(isbn) {
     };
   } catch { return null; }
 }
-
 async function lookupBookByISBN(isbn) {
   return (await lookupGoogleBooks(isbn)) || (await lookupOpenLibrary(isbn));
 }
@@ -143,7 +198,7 @@ function startScanner() {
 
   el.innerHTML = '';
   ensureScannerStyles();
-  el.classList.add('scanning'); // 💡 Start scanning visual cue
+  el.classList.add('scanning'); // visual cue
 
   Quagga.init({
     inputStream: {
@@ -156,7 +211,7 @@ function startScanner() {
       }
     },
     locator: { patchSize: 'medium', halfSample: true },
-    decoder: { readers: ['ean_reader'] },
+    decoder: { readers: ['ean_reader'] }, // EAN-13 only
     locate: true
   }, (err) => {
     if (err) { console.error(err); el.innerHTML = '<p>Camera error.</p>'; return; }
@@ -197,7 +252,7 @@ function startScanner() {
 
 function stopScanner() {
   const el = document.getElementById('scanner');
-  if (el) el.classList.remove('scanning'); // 💡 Remove scanning visual
+  if (el) el.classList.remove('scanning');
   if (quaggaRunning) { Quagga.stop(); quaggaRunning = false; }
 }
 
@@ -214,7 +269,7 @@ async function onDetectedOnce(result) {
 
   const el = document.getElementById('scanner');
 
-  // 💡 Green flash on detection
+  // Green flash on detection
   if (el) {
     el.classList.remove('scanning');
     el.classList.add('detected');
@@ -258,13 +313,15 @@ async function onDetectedOnce(result) {
       pages: meta.pages || null,
       isbn: meta.isbn || raw,
       thumbnail: meta.thumbnail || '',
-      description: meta.description || ''
+      description: meta.description || '',
+      readPages: 0
     });
   } else {
-    books.push({ title: `Book (${raw})`, author: '', pages: null, isbn: raw });
+    books.push({ title: `Book (${raw})`, author: '', pages: null, isbn: raw, readPages: 0 });
   }
   saveBooks(books);
   renderBooks();
+  renderBadges(); // update points/badges immediately
 
   if (el) {
     const details = books[books.length - 1];
@@ -274,12 +331,95 @@ async function onDetectedOnce(result) {
   }
 }
 
+/* ---------- Log Reading Modal ---------- */
+function ensureLogModal() {
+  if (document.getElementById('log-modal')) return;
+  const style = document.createElement('style');
+  style.textContent = `
+    #log-modal { position: fixed; inset: 0; display: none; place-items: center; background: rgba(0,0,0,.5); z-index: 50; }
+    #log-modal.show { display: grid; }
+    #log-modal .sheet { background: var(--card); color: var(--text); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px; min-width: 280px; box-shadow: var(--shadow); }
+    #log-modal .row { display: flex; gap: 10px; margin-top: 10px; }
+    #log-modal input[type="number"] { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--bg, #0f1220); color: var(--text); }
+    #log-modal .btn { padding: 10px 14px; border-radius: 10px; }
+  `;
+  document.head.appendChild(style);
+
+  const modal = document.createElement('div');
+  modal.id = 'log-modal';
+  modal.innerHTML = `
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="log-title">
+      <h3 id="log-title" style="margin:0 0 8px;">Log reading</h3>
+      <div class="meta" id="log-book-meta"></div>
+      <form id="log-form" class="row">
+        <input id="log-pages" type="number" min="1" inputmode="numeric" placeholder="Pages read" required />
+        <button class="btn" type="submit">Save</button>
+        <button class="btn" type="button" id="log-cancel">Cancel</button>
+      </form>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target.id === 'log-modal') closeLogModal();
+  });
+  document.getElementById('log-cancel').addEventListener('click', closeLogModal);
+
+  document.getElementById('log-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const idx = Number(document.getElementById('log-form').dataset.idx);
+    const n = parseInt(document.getElementById('log-pages').value, 10);
+    if (!Number.isFinite(n) || n <= 0) return;
+
+    const books = getBooks();
+    books[idx].readPages = (books[idx].readPages || 0) + n;
+    saveBooks(books);
+    renderBooks();
+    renderBadges(); // update total points & badge progress
+
+    try { localStorage.setItem('lastReadingDate', new Date().toISOString()); } catch {}
+    closeLogModal();
+  });
+}
+
+function openLogModal(idx) {
+  ensureLogModal();
+  const books = getBooks();
+  const b = books[idx];
+  document.getElementById('log-book-meta').textContent =
+    `${b.title || 'Untitled'}${b.author ? ' — ' + b.author : ''}`;
+  const form = document.getElementById('log-form');
+  form.dataset.idx = String(idx);
+  document.getElementById('log-pages').value = '';
+  document.getElementById('log-modal').classList.add('show');
+  setTimeout(() => document.getElementById('log-pages').focus(), 0);
+}
+function closeLogModal() {
+  const m = document.getElementById('log-modal');
+  if (m) m.classList.remove('show');
+}
+
 /* ---------- Initialization ---------- */
 window.addEventListener('DOMContentLoaded', () => {
   renderBooks();
+  renderBadges(); // compute initial points/badges
 
+  // Top nav actions
   const addBtn = document.getElementById('add-trigger');
   if (addBtn) addBtn.addEventListener('click', (e) => { e.preventDefault(); showAddPanel(); });
+
+  // If you have a "Shelf" button: data-tab="shelf"
+  document.addEventListener('click', (e) => {
+    const tab = e.target.closest('.lib-tab');
+    if (!tab) return;
+    const t = tab.dataset.tab;
+    if (t === 'shelf') showShelf();
+    if (t === 'add') showAddPanel();
+    if (t === 'badges') showBadgesPanel();
+    // (favorites tab left as-is for later)
+  });
 
   document.querySelectorAll('.lib-subtab').forEach(btn =>
     btn.addEventListener('click', () => switchMethod(btn.dataset.method))
@@ -290,15 +430,21 @@ window.addEventListener('DOMContentLoaded', () => {
     const title = document.getElementById('manual-title').value.trim();
     if (!title) return;
     const books = getBooks();
-    books.push({ title });
+    books.push({ title, readPages: 0 });
     saveBooks(books);
     renderBooks();
+    renderBadges();
     document.getElementById('manual-title').value = '';
   });
 
   const openCam = document.getElementById('open-camera');
   if (openCam) openCam.addEventListener('click', startScanner);
+
+  // Delegate "Log reading" button
+  document.addEventListener('click', (e) => {
+    const btn = e.target && e.target.closest('.log-btn');
+    if (btn) openLogModal(Number(btn.dataset.idx));
+  });
 });
 
 window.addEventListener('beforeunload', stopScanner);
-
