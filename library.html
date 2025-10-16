@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Library</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a href="index.html" class="brand" aria-label="Home">
+      <img src="assets/logo.svg" alt="App logo" onerror="this.replaceWith(document.createTextNode('📚'))" />
+      <span class="brand-text">Logo</span>
+    </a>
+    <div class="brand-text" aria-hidden="true" style="opacity:.8; font-weight:600;">Library</div>
+    <button class="profile-btn" aria-label="Profile">
+      <svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><path d="M12 12c2.761 0 5-2.686 5-6s-2.239-6-5-6-5 2.686-5 6 2.239 6 5 6zm0 2c-4.418 0-8 3.134-8 7v1h16v-1c0-3.866-3.582-7-8-7z"/></svg>
+    </button>
+  </header>
+
+  <main class="container">
+    <h1 class="welcome" style="margin-bottom:8px;">Library</h1>
+
+    <nav class="lib-tabs" aria-label="Library actions">
+      <button class="lib-tab is-active" data-tab="shelf" aria-current="page">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h4v18H4zM10 3h4v18h-4zM16 3h4v18h-4z"/></svg>
+        <span>Shelf</span>
+      </button>
+      <button class="lib-tab" id="add-trigger" data-tab="add">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 11V4h2v7h7v2h-7v7h-2v-7H4v-2z"/></svg>
+        <span>Add</span>
+      </button>
+      <button class="lib-tab" data-tab="favorites">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4c1.74 0 3.41.81 4.5 2.09C12.09 4.81 13.76 4 15.5 4 18 4 20 6 20 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        <span>Favorites</span>
+      </button>
+      <button class="lib-tab" data-tab="badges">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6 6 .9-4.5 4.3 1.1 6.3L12 17l-5.6 2.5 1.1-6.3L3 8.9 9 8l3-6z"/></svg>
+        <span>Badges</span>
+      </button>
+    </nav>
+
+    <section id="shelf-view">
+      <p id="empty-state" class="streak" style="text-align:center; margin:32px 0 8px;">your library is empty.</p>
+      <ul id="book-grid" class="card-list" style="margin-top:8px;"></ul>
+    </section>
+
+    <section id="add-panel" hidden>
+      <h2 style="margin:16px 0 8px;">Add a new book</h2>
+
+      <nav class="lib-subtabs" role="tablist" aria-label="Add method">
+        <button class="lib-subtab is-active" role="tab" aria-selected="true" data-method="camera">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 5h-3.2l-1.6-2H8.8L7.2 5H4a2 2 0 00-2 2v11a2 2 0 002 2h16a2 2 0 002-2V7a2 2 0 00-2-2zm-8 13a5 5 0 110-10 5 5 0 010 10z"/></svg>
+          <span>Camera</span>
+        </button>
+        <button class="lib-subtab" role="tab" data-method="upload">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20h14a2 2 0 002-2v-5h-2v5H5V6h5V4H5a2 2 0 00-2 2v12a2 2 0 002 2zm7-12l4 4h-3v6h-2v-6H8l4-4z"/></svg>
+          <span>Upload</span>
+        </button>
+        <button class="lib-subtab" role="tab" data-method="keyboard">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 5H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V7a2 2 0 00-2-2zM5 9h2v2H5V9zm3 0h2v2H8V9zm3 0h2v2h-2V9zm3 0h2v2h-2V9zM5 12h2v2H5v-2zm3 0h8v2H8v-2zm9 0h2v2h-2v-2zM5 15h10v2H5v-2zm11 0h3v2h-3v-2z"/></svg>
+          <span>Keyboard</span>
+        </button>
+      </nav>
+
+      <div id="method-camera">
+        <div id="scanner" style="margin:12px 0; border:1px dashed var(--border); border-radius:12px; min-height:220px; display:grid; place-items:center;">
+          <button id="open-camera" class="btn" type="button">Open camera</button>
+        </div>
+        <p class="meta">Point the camera at a book’s barcode (EAN/UPC). We’ll add it instantly.</p>
+      </div>
+
+      <div id="method-upload" hidden>
+        <p class="meta">Upload a cover photo or barcode image (not wired up here).</p>
+        <input type="file" accept="image/*" />
+      </div>
+
+      <div id="method-keyboard" hidden>
+        <label class="meta" for="manual-title">Enter a title:</label>
+        <div style="display:flex; gap:8px; margin-top:6px;">
+          <input id="manual-title" type="text" placeholder="Book title" style="flex:1; padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--card); color:var(--text);" />
+          <button id="manual-add" class="btn" type="button">Add</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar" aria-label="Primary">
+    <a class="tabbar-item" href="index.html">
+      <svg viewBox="0 0 24 24" class="icon"><path d="M12 3l9 8h-3v10h-12v-10h-3l9-8z"/></svg>
+      <span>Home</span>
+    </a>
+    <a class="tabbar-item is-active" href="library.html" aria-current="page">
+      <svg viewBox="0 0 24 24" class="icon"><path d="M3 4a2 2 0 012-2h13a2 2 0 012 2v16a1 1 0 01-1.447.894L16 20.118l-3.553.776A2 2 0 0110 19V5a1 1 0 00-1-1H5a2 2 0 00-2 2z"/></svg>
+      <span>Library</span>
+    </a>
+    <button class="tabbar-item" type="button" aria-label="Profile (static)">
+      <svg viewBox="0 0 24 24" class="icon"><path d="M12 12c2.761 0 5-2.686 5-6s-2.239-6-5-6-5 2.686-5 6 2.239 6 5 6zm0 2c-4.418 0-8 3.134-8 7v1h16v-1c0-3.866-3.582-7-8-7z"/></svg>
+      <span>Profile</span>
+    </button>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+  <script src="library.js"></script>
+</body>
+</html>

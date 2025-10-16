@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Home</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <a href="index.html" class="brand" aria-label="Home">
+      <!-- Replace src with your logo file if you have one -->
+      <img src="assets/logo.svg" alt="App logo" onerror="this.replaceWith(document.createTextNode('📚'))" />
+      <span class="brand-text">Logo</span>
+    </a>
+
+    <button class="profile-btn" aria-label="Profile">
+      <!-- Person Icon (SVG) -->
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="icon"><path d="M12 12c2.761 0 5-2.686 5-6s-2.239-6-5-6-5 2.686-5 6 2.239 6 5 6zm0 2c-4.418 0-8 3.134-8 7v1h16v-1c0-3.866-3.582-7-8-7z"/></svg>
+    </button>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <h1 class="welcome">Welcome back</h1>
+
+    <section class="hero" aria-labelledby="streak-title">
+      <div class="emoji" role="img" aria-label="fire">🔥</div>
+      <h2 id="streak-title" class="visually-hidden">Reading streak</h2>
+      <p class="streak">
+        <span id="streak-count">Current streak is 0 days</span><br />
+        <small>Even 5 minutes of reading counts!</small>
+      </p>
+      <a href="library.html" class="btn" id="log-reading">Log reading</a>
+    </section>
+
+    <!-- Suggestions -->
+    <section class="suggestions">
+      <h2>Suggestions for you</h2>
+
+      <div class="suggestion-block">
+        <h3>Based on random hobbies</h3>
+        <ul id="hobby-list" class="card-list" aria-live="polite"></ul>
+      </div>
+
+      <div class="suggestion-block">
+        <h3>By genre</h3>
+        <ul id="genre-list" class="card-list" aria-live="polite"></ul>
+      </div>
+
+      <div class="suggestion-block">
+        <h3>Popular this week</h3>
+        <ul id="popular-list" class="card-list" aria-live="polite"></ul>
+      </div>
+    </section>
+  </main>
+
+  <!-- Sticky Bottom Nav -->
+  <nav class="tabbar" aria-label="Primary">
+    <a class="tabbar-item is-active" href="index.html" aria-current="page">
+      <!-- Home icon -->
+      <svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><path d="M12 3l9 8h-3v10h-12v-10h-3l9-8z"/></svg>
+      <span>Home</span>
+    </a>
+
+    <a class="tabbar-item" href="library.html">
+      <!-- Book icon -->
+      <svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><path d="M3 4a2 2 0 012-2h13a2 2 0 012 2v16a1 1 0 01-1.447.894L16 20.118l-3.553.776A2 2 0 0110 19V5a1 1 0 00-1-1H5a2 2 0 00-2 2z"/></svg>
+      <span>Library</span>
+    </a>
+
+    <button class="tabbar-item" type="button" aria-label="Profile (static)">
+      <!-- Person icon -->
+      <svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><path d="M12 12c2.761 0 5-2.686 5-6s-2.239-6-5-6-5 2.686-5 6 2.239 6 5 6zm0 2c-4.418 0-8 3.134-8 7v1h16v-1c0-3.866-3.582-7-8-7z"/></svg>
+      <span>Friends</span>
+    </button>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>

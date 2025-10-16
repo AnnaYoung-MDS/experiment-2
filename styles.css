@@ -1,0 +1,182 @@
+:root {
+  --bg: #0f1220;
+  --card: #161a2b;
+  --text: #e7e9f0;
+  --muted: #a7aec2;
+  --accent: #7c5cff;
+  --accent-press: #6a4bf0;
+  --border: #232742;
+  --shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+  color: var(--text);
+  background: linear-gradient(180deg, #0f1220 0%, #0d0f1a 100%);
+  padding-bottom: 72px; /* space for tabbar */
+}
+
+/* Header */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(15, 18, 32, 0.8);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+.brand img { width: 28px; height: 28px; }
+.brand-text { font-weight: 700; letter-spacing: .2px; }
+.profile-btn {
+  display: inline-grid; place-items: center;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  cursor: pointer; color: var(--text);
+}
+.icon { width: 22px; height: 22px; fill: currentColor; }
+
+/* Main */
+.container { max-width: 920px; margin: 0 auto; padding: 20px 16px 80px; }
+.welcome { margin: 8px 0 16px; font-size: clamp(22px, 4vw, 32px); letter-spacing: .3px; }
+
+.hero {
+  text-align: center;
+  background: radial-gradient(1200px 500px at 50% -20%, rgba(124,92,255,.2), transparent), var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px 18px;
+  box-shadow: var(--shadow);
+}
+.emoji { font-size: 64px; line-height: 1; margin-bottom: 8px; filter: drop-shadow(0 6px 20px rgba(255,90,0,.25)); }
+.streak { margin: 6px 0 18px; color: var(--muted); }
+
+.btn {
+  display: inline-block;
+  text-decoration: none;
+  background: var(--accent);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  border: 0;
+  transition: transform .06s ease, background .15s ease;
+}
+.btn:active { transform: translateY(1px); background: var(--accent-press); }
+
+/* Suggestions */
+.suggestions { margin-top: 28px; }
+.suggestions h2 { margin: 0 0 12px; font-size: 20px; }
+.suggestion-block { margin: 18px 0; }
+.suggestion-block h3 { margin: 0 0 10px; font-size: 16px; color: var(--muted); font-weight: 600; }
+
+.card-list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  min-height: 72px;
+  display: grid; gap: 6px;
+}
+.card .title { font-weight: 700; }
+.card .meta { color: var(--muted); font-size: 13px; }
+
+/* Sticky Tabbar */
+.tabbar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 64px;
+  background: rgba(15,18,32,.85);
+  backdrop-filter: blur(6px);
+  border-top: 1px solid var(--border);
+  display: grid; grid-template-columns: repeat(3, 1fr);
+}
+.tabbar-item {
+  appearance: none;
+  background: none; border: 0; color: var(--muted);
+  text-decoration: none; cursor: pointer;
+  display: grid; place-items: center; gap: 6px;
+  font: inherit; padding: 6px 0; position: relative;
+}
+.tabbar-item .icon { width: 22px; height: 22px; }
+.tabbar-item span { font-size: 12px; }
+.tabbar-item.is-active, .tabbar-item:focus-visible { color: var(--text); }
+
+/* a11y */
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+/* Responsive tweaks */
+@media (min-width: 720px) {
+  .emoji { font-size: 72px; }
+  .btn { padding: 14px 18px; }
+}
+
+/* Make the scanner box show the live camera */
+#scanner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;         /* keeps a nice video shape */
+  background: #000;           /* visible while camera starts */
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  display: block;             /* ensure it's a block, not grid */
+  place-items: unset;         /* override any grid centering */
+}
+
+/* Quagga injects <video> and <canvas>; make them fill the box */
+#scanner video,
+#scanner canvas {
+  position: absolute !important;
+  top: 0; left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+
+.cover {
+  width: 60px;
+  height: auto;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* Scanner box default state */
+#scanner {
+  border: 3px dashed rgba(255,255,255,0.3);
+  border-radius: 12px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+/* Actively scanning */
+#scanner.scanning {
+  border-color: #0af;
+  box-shadow: 0 0 12px rgba(0,170,255,0.6);
+}
+
+/* Successful detection feedback */
+#scanner.detected {
+  border-color: #4caf50;
+  box-shadow: 0 0 18px rgba(76, 175, 80, 0.7);
+  animation: pulse-success 1s ease;
+}
+
+@keyframes pulse-success {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
